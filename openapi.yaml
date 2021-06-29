@@ -1,0 +1,209 @@
+openapi: 3.0.3
+info:
+  title: Ticket Booking
+  description: Ticket Booking server
+  contact:
+    name: API Support
+    url: https://example.com/
+    email: support@example.com
+  version: 1.0.0
+servers:
+  - url: https://example.com/
+    description: Ticket Booking server
+paths:
+  /login:
+    post:
+      operationId: login
+      x-exegesis-controller: loginController
+      summary: get authentication token
+      description: The endpoint allows you to get an authentication token that will be used for all api calls. To receive a token, you must use the logs and password of the iBuildApp user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        200:
+          $ref: '#/components/responses/GeneralResponse'
+
+  /register:
+    post:
+      operationId: register
+      x-exegesis-controller: registerController
+      tags:
+        - Register user
+      summary: registration user
+      description: The endpoint allows you to get an authentication token that will be used for all api calls. To receive a token, you must use the logs and password of the iBuildApp user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - firstName
+                - lastName
+                - password
+              properties:
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                phone:
+                  type: string
+                password:
+                  type: string
+                  format: password
+
+      responses:
+        200:
+          $ref: '#/components/responses/GeneralResponse'
+
+  /room/list:
+    post:
+      operationId: roomList
+      x-exegesis-controller: roomController
+      security:
+        - bearerAuth: [ ]
+      description: The endpoint allows you to list of rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dateBegin
+                - dateEnd
+              properties:
+                dateBegin:
+                  type: string
+                dateEnd:
+                  type: string
+
+      responses:
+        200:
+          $ref: '#/components/responses/GeneralResponse'
+
+  /room/booking:
+    post:
+      operationId: roomBooking
+      x-exegesis-controller: roomController
+      security:
+        - bearerAuth: [ ]
+      description: The endpoint allows you to booking of room
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dateBegin
+                - dateEnd
+                - roomId
+                - humanCount
+              properties:
+                dateBegin:
+                  type: string
+                dateEnd:
+                  type: string
+                roomId:
+                  type: integer
+                humanCount:
+                  type: integer
+
+      responses:
+        200:
+          $ref: '#/components/responses/GeneralResponse'
+
+
+
+components:
+  parameters:
+    Id:
+      name: id
+      in: query
+      schema:
+        $ref: '#/components/schemas/UniqueId'
+      required: true
+    Email:
+      name: email
+      in: query
+      schema:
+        type: string
+    Token:
+      name: token
+      in: query
+      schema:
+        type: string
+
+  responses:
+    GeneralResponse:
+      description: General response from inventory soution API
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Error'
+              - $ref: '#/components/schemas/Data'
+    UnauthorizedError:
+      description: Access token is missing or invalid
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [200, 500]
+          description: "The code is show was request successful or no. |
+          200 - the request was processed successfully"
+        message:
+          type: string
+          description: "This Error message that describes cases when something whents wrong.
+          For successful responses message is empty."
+    Data:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/Room'
+
+    Room:
+      type: object
+      description: room object
+      required:
+        - price
+        - address
+        - roomCount
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+          format: float
+        address:
+          type: string
+        roomCount:
+          type: integer
+
+    UniqueId:
+      type: integer
+      format: int64
+      description: Unique identifier
+
+
+
+

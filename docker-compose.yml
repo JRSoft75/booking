@@ -1,0 +1,40 @@
+version: '3.3'
+services:
+  db:
+    image: postgres:alpine
+    container_name: ${DB_CONTAINER_NAME}
+    restart: unless-stopped
+    tty: true
+    ports:
+      - ${DB_PORT}:${DB_PORT_CONTAINER}
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - database:/var/lib/postgresql/data
+
+  node-server:
+    build:
+      context: .
+      dockerfile: ./docker/node-server.docker
+    container_name: ${BE_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_ROOT_USERNAME: ${DB_ROOT_USERNAME}
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - ${BE_NODE_LOG_PATH}:${BE_NODE_LOG_PATH_CONTAINER}
+    ports:
+      - ${BE_NODE_PORT}:${BE_NODE_PORT_CONTAINER}
+    command: npm start
+    depends_on:
+      - db
+
+volumes:
+  database:
